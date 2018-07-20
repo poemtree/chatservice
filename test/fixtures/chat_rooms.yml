@@ -4,10 +4,10 @@ one:
   title: MyString
   master_id: MyString
   max_count: 1
-  admission_count: 1
+  admissions_count: 1
 
 two:
   title: MyString
   master_id: MyString
   max_count: 1
-  admission_count: 1
+  admissions_count: 1

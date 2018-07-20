@@ -18,7 +18,7 @@ class ChatRoomsControllerTest < ActionController::TestCase
 
   test "should create chat_room" do
     assert_difference('ChatRoom.count') do
-      post :create, chat_room: { admission_count: @chat_room.admission_count, master_id: @chat_room.master_id, max_count: @chat_room.max_count, title: @chat_room.title }
+      post :create, chat_room: { admissions_count: @chat_room.admissions_count, master_id: @chat_room.master_id, max_count: @chat_room.max_count, title: @chat_room.title }
     end
 
     assert_redirected_to chat_room_path(assigns(:chat_room))
@@ -35,7 +35,7 @@ class ChatRoomsControllerTest < ActionController::TestCase
   end
 
   test "should update chat_room" do
-    patch :update, id: @chat_room, chat_room: { admission_count: @chat_room.admission_count, master_id: @chat_room.master_id, max_count: @chat_room.max_count, title: @chat_room.title }
+    patch :update, id: @chat_room, chat_room: { admissions_count: @chat_room.admissions_count, master_id: @chat_room.master_id, max_count: @chat_room.max_count, title: @chat_room.title }
     assert_redirected_to chat_room_path(assigns(:chat_room))
   end
 

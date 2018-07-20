@@ -1,5 +1,5 @@
 class ChatRoomsController < ApplicationController
-  before_action :set_chat_room, only: [:show, :edit, :update, :destroy]
+  before_action :set_chat_room, only: [:show, :edit, :update, :destroy, :join, :chat, :exit]
 
   # GET /chat_rooms
   # GET /chat_rooms.json
@@ -25,9 +25,10 @@ class ChatRoomsController < ApplicationController
   # POST /chat_rooms.json
   def create
     @chat_room = ChatRoom.new(chat_room_params)
-
+    @chat_room.master_id = current_user.email
     respond_to do |format|
       if @chat_room.save
+        Admission.create(user_id: current_user.id, chat_room_id: @chat_room.id)
         format.html { redirect_to @chat_room, notice: 'Chat room was successfully created.' }
         format.json { render :show, status: :created, location: @chat_room }
       else
@@ -61,6 +62,23 @@ class ChatRoomsController < ApplicationController
     end
   end
 
+  def join
+    unless current_user.join_room?(@chat_room)
+      Admission.create(user_id: current_user.id, chat_room_id: params[:id])
+    else
+      render js: "alert('You aleady enter the chat room')"
+    end
+  end
+
+  def chat
+    @chat_room.chats.create(user_id: current_user.id, message: params[:message])
+  end
+
+  def exit
+    admission = current_user.admissions.find_by(chat_room_id: @chat_room.id)
+    admission.destroy
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_chat_room
@@ -69,6 +87,6 @@ class ChatRoomsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def chat_room_params
-      params.require(:chat_room).permit(:title, :master_id, :max_count, :admission_count)
+      params.require(:chat_room).permit(:title, :master_id, :max_count, :admissions_count)
     end
 end

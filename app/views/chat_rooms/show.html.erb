@@ -11,14 +11,76 @@
 </p>
 
 <p>
-  <strong>Max count:</strong>
-  <%= @chat_room.max_count %>
+  <strong>Join:</strong>
+  <%= @chat_room.admissions_count %> / <%= @chat_room.max_count %>
 </p>
 
-<p>
-  <strong>Admission count:</strong>
-  <%= @chat_room.admission_count %>
-</p>
+<p class="user-list"><strong>Users:</strong></p>
+<% @chat_room.users.each do |user| %>
+  <p id="<%= user.id %>"><%= user.email %></p>
+<% end %>
+<hr>
 
+<% if current_user.join_room? @chat_room %>
+  <div class="chat-list">
+    <% @chat_room.chats.each do |chat| %>
+      <p><%= chat.user.email %> : </p>
+      <p>&emsp;&emsp;&emsp;&emsp;<%= chat.message %></p>
+    <% end %>
+  </div>
+  <%= form_tag(chat_chat_room_path(@chat_room), remote: true) do %>
+    <%= text_field_tag :message %>
+    <%= submit_tag("Talk") %>
+  <% end %>
+<% end %>
+<% unless current_user.join_room? @chat_room %>
+  <%= link_to 'Enter', join_chat_room_path(@chat_room), remote: true, method: 'post' %>
+<% else %>
+  <%= link_to 'Exit', exit_chat_room_path(@chat_room), remote: true, method: 'delete', data: {confirm: 'Could you want to exit this chat room?'}%>
+<% end %>
 <%= link_to 'Edit', edit_chat_room_path(@chat_room) %> |
 <%= link_to 'Back', chat_rooms_path %>
+
+<script>
+  $(document).on('ready', function(){
+    function user_join(data) {
+      $('.user-list').append(`<p class="${data.id}">${data.email}</p>`)
+    }
+
+    function user_chat(data) {
+      $('.chat-list').append(`      <p>${data.email} : </p>
+            <p>&emsp;&emsp;${data.message}</p>`)
+    }
+
+    function user_exit(data) {
+      $('.chat-list').append(`<p>${data.email} did exit this chat room</p>`)
+      $(`#${data.user_id}`).remove()
+    }
+
+    var pusher = new Pusher("<%=ENV['pusher_key']%>", {
+      cluster: "<%=ENV['pusher_cluster']%>",
+      encrypted: true
+    });
+
+    var channel = pusher.subscribe('chat_room_<%=@chat_room.id%>');
+    channel.bind('create', function(data) {
+      consol.log("Was it made?")
+      alert(JSON.stringify(data));
+    });
+
+    channel.bind('join', function(data) {
+      // 지금 들어온 유저를 유저 참여 목록에 추가한다.
+      user_join(data);
+
+    });
+
+    channel.bind('chat', function(data) {
+      user_chat(data);
+    });
+
+    channel.bind('exit', function(data) {
+      user_exit(data);
+    });
+
+  })
+</script>
