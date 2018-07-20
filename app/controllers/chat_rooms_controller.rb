@@ -75,8 +75,12 @@ class ChatRoomsController < ApplicationController
   end
 
   def exit
-    admission = current_user.admissions.find_by(chat_room_id: @chat_room.id)
-    admission.destroy
+    if current_user.email == @chat_room.master_id
+      @chat_room.destroy
+    else
+      admission = current_user.admissions.find_by(chat_room_id: @chat_room.id)
+      admission.destroy
+    end
   end
 
   private

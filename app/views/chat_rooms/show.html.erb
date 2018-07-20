@@ -43,18 +43,28 @@
 
 <script>
   $(document).on('ready', function(){
+
+    //
     function user_join(data) {
       $('.user-list').append(`<p class="${data.id}">${data.email}</p>`)
     }
 
+    //
     function user_chat(data) {
       $('.chat-list').append(`      <p>${data.email} : </p>
             <p>&emsp;&emsp;${data.message}</p>`)
     }
 
+    //
     function user_exit(data) {
       $('.chat-list').append(`<p>${data.email} did exit this chat room</p>`)
       $(`#${data.user_id}`).remove()
+    }
+
+    //
+    function room_destroy(data) {
+      alert('This room was destroy for it\'s master')
+      location.href = '/'
     }
 
     var pusher = new Pusher("<%=ENV['pusher_key']%>", {
@@ -80,6 +90,10 @@
 
     channel.bind('exit', function(data) {
       user_exit(data);
+    });
+
+    channel.bind('destroy', function(data) {
+      room_destroy(data);
     });
 
   })
