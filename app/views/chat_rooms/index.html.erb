@@ -15,7 +15,7 @@
 
   <tbody class="chat_room_list">
     <% @chat_rooms.each do |chat_room| %>
-      <tr>
+      <tr class="<%=chat_room.id%>">
         <td><%= chat_room.title %></td>
         <td><%= chat_room.master_id %></td>
         <td><%= chat_room.admissions_count %> / <%= chat_room.max_count %></td>
@@ -32,18 +32,29 @@
 <%= link_to 'New Chat room', new_chat_room_path %>
 
 <script>
-  var pusher = new Pusher("<%=ENV['pusher_key']%>", {
-    cluster: "<%=ENV['pusher_cluster']%>",
-    encrypted: true
-  });
+  $(document).on('ready', function(){
 
-  var channel = pusher.subscribe('chat_room');
-  channel.bind('create', function(data) {
-    consol.log("Was it made?")
-    alert(JSON.stringify(data));
-  });
-  channel.bind('join', function(data) {
-    consol.log("Did someone join in?")
-    alert(JSON.stringify(data));
+    //
+    function create_room(data) {
+      $('.chat_room_list').append(`<tr class="${data.id}">
+        <td>${data.title}</td>
+        <td>${data.master_id}</td>
+        <td>${data.admissions_count} / ${data.max_count}</td>
+        <td><a href="/chat_rooms/${data.id}">Show</a></td>
+        <td><a href="/chat_rooms/${data.id}/edit">Edit</a></td>
+        <td><a data-confirm="Are you sure?" rel="nofollow" data-method="delete" href="/chat_rooms/${data.id}">Destroy</a></td>
+      </tr>`)
+    }
+
+    var pusher = new Pusher("<%=ENV['pusher_key']%>", {
+      cluster: "<%=ENV['pusher_cluster']%>",
+      encrypted: true
+    });
+
+    var channel = pusher.subscribe('chat_room');
+    channel.bind('create', function(data) {
+      create_room(data);
+    });
+
   });
 </script>
