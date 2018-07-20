@@ -20,8 +20,10 @@
         <td><%= chat_room.master_id %></td>
         <td><%= chat_room.admissions_count %> / <%= chat_room.max_count %></td>
         <td><%= link_to 'Show', chat_room %></td>
-        <td><%= link_to 'Edit', edit_chat_room_path(chat_room) %></td>
-        <td><%= link_to 'Destroy', chat_room, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        <% if !current_user.nil? and current_user.email == chat_room.master_id %>
+          <td><%= link_to 'Edit', edit_chat_room_path(chat_room) %></td>
+          <td><%= link_to 'Destroy', chat_room, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        <% end %>
       </tr>
     <% end %>
   </tbody>
@@ -46,6 +48,10 @@
       </tr>`)
     }
 
+    function destroy_room(data) {
+      $(`.${data.id}`).remove()
+    }
+
     var pusher = new Pusher("<%=ENV['pusher_key']%>", {
       cluster: "<%=ENV['pusher_cluster']%>",
       encrypted: true
@@ -55,6 +61,8 @@
     channel.bind('create', function(data) {
       create_room(data);
     });
-
+    channel.bind('destroy', function(data) {
+      destroy_room(data);
+    });
   });
 </script>
